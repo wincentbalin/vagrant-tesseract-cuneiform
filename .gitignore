@@ -1,0 +1,15 @@
+# Ignore Vagrant files
+.vagrant/
+
+# Ignore VM log file
+ubuntu-xenial-16.04-cloudimg-console.log
+
+core.gz
+cuneiform-screenshot.png
+language-specific.sh.gz
+performance.xls
+seguihis.ttf
+work/training.tgz
+*.box
+*.tif
+*.tr
