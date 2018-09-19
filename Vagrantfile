@@ -23,13 +23,14 @@ Vagrant.configure("2") do |config|
     chmod 0755 {tesstrain,tesstrain_utils,language-specific}.sh
     chown vagrant.vagrant {tesstrain,tesstrain_utils,language-specific}.sh
     # Install Cuneiform fonts
-    apt-get install unzip
+    apt-get install -y unzip
     FONTS_DIR=/usr/share/fonts
-    wget http://oracc.museum.upenn.edu/downloads/{CuneiformOB,CuneiformNA}.zip
+    wget http://oracc.museum.upenn.edu/downloads/{CuneiformOB,CuneiformNA,CuneiformComposite-1001}.zip
     unzip CuneiformOB.zip
     unzip CuneiformNA.zip
-    mv CuneiformOB.ttf CuneiformNA.ttf $FONTS_DIR
-    rm CuneiformOB.zip CuneiformNA.zip
+    unzip CuneiformComposite-1001.zip
+    mv CuneiformOB.ttf CuneiformNA.ttf CuneiformComposite.ttf $FONTS_DIR
+    rm CuneiformOB.zip CuneiformNA.zip CuneiformComposite-1001.zip
     text2image --fonts_dir $FONTS_DIR --list_available_fonts
     # Setup user environment
     apt-get install -y vim mc tmux make
