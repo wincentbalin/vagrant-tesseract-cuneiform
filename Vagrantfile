@@ -32,6 +32,14 @@ Vagrant.configure("2") do |config|
     mv CuneiformOB.ttf CuneiformNA.ttf CuneiformComposite.ttf $FONTS_DIR
     rm CuneiformOB.zip CuneiformNA.zip CuneiformComposite-1001.zip
     text2image --fonts_dir $FONTS_DIR --list_available_fonts
+    # Install additional training tools
+    apt-get install -y git build-essential pkg-config libpango1.0-dev
+    git clone https://ancientgreekocr.org/grctraining.git
+    cd grctraining
+    make tools/addmetrics tools/xheight
+    strip tools/addmetrics tools/xheight
+    cp tools/addmetrics tools/xheight /usr/local/bin
+    cd ..
     # Setup user environment
     apt-get install -y vim mc tmux make
     ln -sf /vagrant /home/vagrant/host
