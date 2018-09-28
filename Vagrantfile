@@ -31,6 +31,12 @@ Vagrant.configure("2") do |config|
     unzip CuneiformComposite-1001.zip
     mv CuneiformOB.ttf CuneiformNA.ttf CuneiformComposite.ttf $FONTS_DIR
     rm CuneiformOB.zip CuneiformNA.zip CuneiformComposite-1001.zip
+    # Copy Segoe UI Historic if present
+    if [ -f /vagrant/seguihis.ttf ]
+    then
+        cp /vagrant/seguihis.ttf $FONTS_DIR
+    fi
+    fc-cache -fv
     text2image --fonts_dir $FONTS_DIR --list_available_fonts
     # Install additional training tools
     apt-get install -y git build-essential pkg-config libpango1.0-dev
