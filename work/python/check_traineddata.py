@@ -10,6 +10,7 @@ import argparse
 import subprocess
 import statistics
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
 
 
 def levenshtein(s: str, t: str) -> int:
@@ -79,7 +80,7 @@ def wer(ref: str, hyp: str) -> float:
 
 class AbstractReport(metaclass=ABCMeta):
     @abstractmethod
-    def add_test(self, truth: str, recognised: str):
+    def add_test(self, reference: str, hypothesis: str):
         pass
 
     @abstractmethod
@@ -92,8 +93,8 @@ class StatisticalWERReport(AbstractReport):
     def __init__(self):
         self.wer_list = []
 
-    def add_test(self, truth: str, recognised: str):
-        self.wer_list.append(wer(truth, recognised))
+    def add_test(self, reference: str, hypothesis: str):
+        self.wer_list.append(wer(reference, hypothesis))
 
     def export_report(self):
         print('WER: mean {}, stdev {}'.format(statistics.mean(self.wer_list), statistics.stdev(self.wer_list)))
@@ -104,11 +105,43 @@ class HTMLTableReport(AbstractReport):
     def __init__(self):
         self.tests = []
 
-    def add_test(self, truth: str, recognised: str):
-        self.tests.append((truth, recognised))
+    def add_test(self, reference: str, hypothesis: str):
+        self.tests.append((reference, hypothesis))
 
     def export_report(self):
-        l = [(truth, recognised) for truth, recognised in self.tests]
+        with open('report.html', 'w', encoding='utf-8') as htmlfile:
+            htmlfile.write('''<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Tesseract recognition report</title>
+<style>
+tr.even {
+    background-color: #ddd
+}
+
+tr.error > td {
+    border: 1px solid crimson
+}
+</style>
+</head>
+<body>
+<h1>This is a Tesseract recognition report (created on ''' + datetime.now().isoformat() + ''')</h1>
+<table>
+<tr><th>Reference</th><th>Hypothesis</th></tr>
+''')
+            wer_list = []
+            for row_index, (reference, hypothesis) in enumerate(self.tests, 1):
+                wer_value = wer(reference, hypothesis)
+                wer_list.append(wer_value)
+                row_class = 'even' if row_index % 2 == 0 else 'odd'
+                error_class = ' error' if wer_value > 0.0 else ''
+                htmlfile.write('<tr class="{}{}"><td>{}</td><td>{}</td></tr>\n'.format(row_class, error_class, reference, hypothesis))
+            htmlfile.write('</table>\n')
+            htmlfile.write('WER: mean {}, stdev {}\n'.format(statistics.mean(wer_list), statistics.stdev(wer_list)))
+            htmlfile.write('</html>\n')
 
 
 def main():
