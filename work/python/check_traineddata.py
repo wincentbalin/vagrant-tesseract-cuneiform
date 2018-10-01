@@ -192,6 +192,7 @@ p.error {
 def main():
     argparser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__,
                                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    argparser.add_argument('-l', '--language', default='akk', help='ISO-632-3 language code')
     argparser.add_argument('-i', '--wordlist', help='File with words to build tests from')
     argparser.add_argument('-w', '--wrap', type=int, default=80, help='Specify max width of a text line')
     argparser.add_argument('-f', '--font', help='Font names (multiple names must be separated with comma')
@@ -234,7 +235,7 @@ def main():
         os.remove(testfn)
         logging.info('OCRing test image file')
         subprocess.run([tesseract_cmd,
-                        '-l', 'akk',
+                        '-l', args.language,
                         imagefn, outputbase])
         with open(testfn, 'r', encoding='utf-8') as recognisedtext:
             test_hyp = ' '.join([line.rstrip() for line in recognisedtext.readlines()])
