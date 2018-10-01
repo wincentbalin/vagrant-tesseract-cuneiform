@@ -141,7 +141,52 @@ tr.error > td {
                 htmlfile.write('<tr class="{}{}"><td>{}</td><td>{}</td></tr>\n'.format(row_class, error_class, reference, hypothesis))
             htmlfile.write('</table>\n')
             htmlfile.write('WER: mean {}, stdev {}\n'.format(statistics.mean(wer_list), statistics.stdev(wer_list)))
-            htmlfile.write('</html>\n')
+            htmlfile.write('''</body>
+</html>
+''')
+
+
+class HTMLParagraphReport(AbstractReport):
+    """Put all tests into HTML paragraphs, hypothesis under the reference, so you can compare word-by-word much easier."""
+    def __init__(self):
+        self.tests = []
+
+    def add_test(self, reference: str, hypothesis: str):
+        self.tests.append((reference, hypothesis))
+
+    def export_report(self):
+        with open('report.html', 'w', encoding='utf-8') as htmlfile:
+            htmlfile.write('''<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Tesseract recognition report</title>
+<style>
+p.even {
+    background-color: #ddd
+}
+
+p.error {
+    border: 1px solid crimson
+}
+</style>
+</head>
+<body>
+<h1>This is a Tesseract recognition report (created on ''' + datetime.now().isoformat() + ''')</h1>
+''')
+            wer_list = []
+            for row_index, (reference, hypothesis) in enumerate(self.tests, 1):
+                wer_value = wer(reference, hypothesis)
+                wer_list.append(wer_value)
+                row_class = 'even' if row_index % 2 == 0 else 'odd'
+                error_class = ' error' if wer_value > 0.0 else ''
+                htmlfile.write('<p class="{}{}">\n{}<br/>\n{}<br/>\n</p>\n'.format(row_class, error_class, reference, hypothesis))
+            htmlfile.write('WER: mean {}, stdev {}\n'.format(statistics.mean(wer_list), statistics.stdev(wer_list)))
+            htmlfile.write('''</body>
+</html>
+''')
 
 
 def main():
@@ -155,7 +200,7 @@ def main():
     argparser.add_argument('-x', '--exposure', type=int, default=0, help='Exposure of the test image')
     argparser.add_argument('-p', '--path', help='Tesseract path')
     argparser.add_argument('-d', '--tessdata', help='Tessdata directory')
-    argparser.add_argument('-r', '--report', choices=['stat', 'html'], default='stat', help='Type of report')
+    argparser.add_argument('-r', '--report', choices=['stat', 'html', 'htmlp'], default='stat', help='Type of report')
     args = argparser.parse_args()
 
     logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO)
@@ -169,6 +214,8 @@ def main():
         report = StatisticalWERReport()
     elif args.report == 'html':
         report = HTMLTableReport()
+    elif args.report == 'htmlp':
+        report = HTMLParagraphReport()
     for i in range(args.tests):
         test_ref = ' '.join(random.sample(wordlist, args.wpe))
         outputbase = 'test{:04}'.format(i)
