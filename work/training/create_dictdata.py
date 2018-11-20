@@ -32,6 +32,7 @@ def create_freq_wordlist(cnt: collections.Counter, threshold=0.95) -> list:
 
 def create_bigramlist(cnt: collections.Counter) -> list:
     return [item for item, _ in sorted(cnt.items(), key=operator.itemgetter(1), reverse=True)]
+    # We can also replace sorted(...) with create_wordstats(cnt), and thus the whole function with create_wordlist(cnt)
 
 
 def write_file(filename: str, wordlist: list, columns=2):
